@@ -165,9 +165,14 @@ voice-clone generate \
 
 ### モデル
 
-- 使用モデル: `Qwen/Qwen3-TTS-12Hz-0.6B`（軽量版、約1-2GB）
-- 初回実行時に自動ダウンロード
-- CPUでも動作可能（生成は遅いが品質は同等）
+| モデル | サイズ | 推奨環境 |
+|--------|--------|----------|
+| `Qwen/Qwen3-TTS-12Hz-0.6B-Base` | 0.6B | CPU / GPU |
+| `Qwen/Qwen3-TTS-12Hz-1.7B-Base` | 1.7B | GPU（VRAM 8GB+） |
+
+- デフォルト: 0.6B モデル（軽量版）
+- `--model` オプションで切り替え可能
+- 詳細は [TTS ガイド](./docs/guide/tts.md) 参照
 
 ---
 

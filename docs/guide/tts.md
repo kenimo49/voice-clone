@@ -100,15 +100,68 @@ print(f'Sample rate: {sr}Hz')
 
 ## モデルについて
 
-### 使用モデル
+### 利用可能なモデル
 
-- **名前**: Qwen/Qwen3-TTS-12Hz-0.6B-Base
-- **サイズ**: 約 1-2GB
-- **対応言語**: 日本語、中国語、英語など10言語
+| モデル名 | パラメータ | サイズ | 推奨環境 | 品質 |
+|----------|-----------|--------|----------|------|
+| `Qwen/Qwen3-TTS-12Hz-0.6B-Base` | 0.6B | 約 1-2GB | CPU / GPU | 良好 |
+| `Qwen/Qwen3-TTS-12Hz-1.7B-Base` | 1.7B | 約 3-4GB | GPU（VRAM 8GB+） | より高品質 |
+
+**デフォルト**: `Qwen/Qwen3-TTS-12Hz-0.6B-Base`（軽量版）
+
+### モデルの選択
+
+#### GPU 環境で高品質モデルを使用
+
+```bash
+# 1.7B モデルを指定（GPU推奨）
+voice-clone generate \
+  -r samples/speaker.wav \
+  -t "こんにちは" \
+  -o outputs/hello.wav \
+  --model Qwen/Qwen3-TTS-12Hz-1.7B-Base \
+  --device cuda
+```
+
+#### 環境別の推奨設定
+
+| 環境 | モデル | デバイス |
+|------|--------|----------|
+| CPU のみ | `Qwen/Qwen3-TTS-12Hz-0.6B-Base` | `--device cpu` |
+| GPU（VRAM 4GB） | `Qwen/Qwen3-TTS-12Hz-0.6B-Base` | `--device cuda` |
+| GPU（VRAM 8GB+） | `Qwen/Qwen3-TTS-12Hz-1.7B-Base` | `--device cuda` |
+
+#### エイリアスの設定（オプション）
+
+頻繁に使う場合は、シェルにエイリアスを設定すると便利です：
+
+```bash
+# ~/.bashrc に追加
+alias vc-cpu='voice-clone generate --model Qwen/Qwen3-TTS-12Hz-0.6B-Base --device cpu'
+alias vc-gpu='voice-clone generate --model Qwen/Qwen3-TTS-12Hz-1.7B-Base --device cuda'
+```
+
+使用例：
+
+```bash
+vc-gpu -r samples/speaker.wav -t "こんにちは" -o outputs/hello.wav
+```
+
+### 対応言語
+
+Qwen3-TTS は以下の10言語に対応しています：
+
+- 日本語、中国語、英語、韓国語、ドイツ語
+- フランス語、ロシア語、ポルトガル語、スペイン語、イタリア語
 
 ### 初回実行
 
-初回実行時にモデルが自動ダウンロードされます（1-2GB）。
+初回実行時にモデルが自動ダウンロードされます。
+
+| モデル | ダウンロードサイズ |
+|--------|-------------------|
+| 0.6B | 約 1-2GB |
+| 1.7B | 約 3-4GB |
 
 ```
 Fetching 4 files: 100%|██████████| 4/4 [00:26<00:00, 6.65s/it]
@@ -122,10 +175,11 @@ Fetching 4 files: 100%|██████████| 4/4 [00:26<00:00, 6.65s/i
 
 ### 処理時間の目安
 
-| 環境 | 10秒の音声生成 |
-|------|---------------|
-| CPU（i7-10610U） | 30秒〜1分 |
-| GPU（CUDA） | 数秒 |
+| 環境 | モデル | 10秒の音声生成 |
+|------|--------|---------------|
+| CPU（i7-10610U） | 0.6B | 30秒〜1分 |
+| GPU（RTX 3060） | 0.6B | 2〜3秒 |
+| GPU（RTX 3060） | 1.7B | 5〜10秒 |
 
 ### GPU の確認
 
