@@ -34,6 +34,7 @@ voice-clone generate \
 | `--device` | 計算デバイス | auto |
 | `--model` | モデル名 | Qwen/Qwen3-TTS-12Hz-0.6B-Base |
 | `--sample-rate` | サンプルレート | 24000 |
+| `--temperature` | 音声のテンション調整 | 1.0 |
 
 ## 実行例
 
@@ -198,6 +199,55 @@ voice-clone devices --gpu
 └────────────────┴────────────────────────┘
 ```
 
+## 音声のテンション調整
+
+`--temperature` オプションで音声のテンション（抑揚・エネルギー）を調整できます。
+
+### temperature の効果
+
+| 値 | 効果 | 用途 |
+|----|------|------|
+| 0.7〜0.9 | 落ち着いた・安定した音声 | ナレーション、解説 |
+| 1.0（デフォルト） | 標準的な音声 | 一般的な用途 |
+| 1.2〜1.5 | 元気・ハイテンションな音声 | キャラクターボイス、挨拶 |
+
+### 使用例
+
+```bash
+# 落ち着いたナレーション
+voice-clone generate \
+  -r samples/speaker.wav \
+  -t "本日のニュースをお伝えします" \
+  -o outputs/news.wav \
+  --temperature 0.8
+
+# 元気な挨拶
+voice-clone generate \
+  -r samples/speaker.wav \
+  -t "こんにちは！今日も元気にいきましょう！" \
+  -o outputs/greeting.wav \
+  --temperature 1.3
+```
+
+### テキストとの組み合わせ
+
+テンション調整は **テキストの書き方** と組み合わせると効果的です：
+
+| テクニック | 効果 |
+|-----------|------|
+| 「！」を使う | より強調された発話 |
+| 「〜」を使う | 柔らかい印象 |
+| 句読点を増やす | ゆっくりした発話 |
+
+```bash
+# 高テンション：temperatureとテキストの組み合わせ
+voice-clone generate \
+  -r samples/speaker.wav \
+  -t "やったー！最高です！ありがとうございます！" \
+  -o outputs/excited.wav \
+  --temperature 1.3
+```
+
 ## 音声品質を上げるコツ
 
 ### 参照音声
@@ -289,13 +339,22 @@ from voice_clone.tts.qwen_tts import QwenTTS
 from voice_clone.config import TTSConfig
 from pathlib import Path
 
-config = TTSConfig(device="cpu")
+config = TTSConfig(device="cuda")
 tts = QwenTTS(config=config)
 
+# 通常の生成
 tts.generate(
     text="こんにちは",
     reference_audio=Path("samples/speaker.wav"),
     output_path=Path("outputs/hello.wav"),
+)
+
+# テンション高めで生成
+tts.generate(
+    text="やったー！最高です！",
+    reference_audio=Path("samples/speaker.wav"),
+    output_path=Path("outputs/excited.wav"),
+    temperature=1.3,
 )
 ```
 

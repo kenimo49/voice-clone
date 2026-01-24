@@ -62,6 +62,7 @@ class QwenTTS:
         output_path: Path,
         sample_rate: int = 24000,
         ref_text: Optional[str] = None,
+        temperature: float = 1.0,
     ) -> Path:
         """Generate speech using voice cloning.
 
@@ -71,6 +72,8 @@ class QwenTTS:
             output_path: Path to save generated audio
             sample_rate: Output sample rate
             ref_text: Reference text (what was spoken in reference audio)
+            temperature: Sampling temperature (higher = more energetic/varied, lower = more stable)
+                        Default: 1.0, High tension: 1.2-1.5, Calm: 0.7-0.9
 
         Returns:
             Path to the generated audio file
@@ -86,6 +89,8 @@ class QwenTTS:
 
         print(f"Generating speech for: '{text}'")
         print(f"Using reference: {reference_audio}")
+        if temperature != 1.0:
+            print(f"Temperature: {temperature}")
 
         # Load reference audio
         ref_audio_data, ref_sr = sf.read(reference_audio)
@@ -100,6 +105,7 @@ class QwenTTS:
             ref_audio=(ref_audio_data, ref_sr),
             ref_text=ref_text,
             x_vector_only_mode=(ref_text is None),
+            temperature=temperature,
         )
 
         audio = wavs[0]
@@ -125,6 +131,7 @@ class QwenTTS:
         sample_rate: int = 24000,
         prefix: str = "output",
         ref_text: Optional[str] = None,
+        temperature: float = 1.0,
     ) -> list[Path]:
         """Generate multiple audio files from a list of texts.
 
@@ -135,6 +142,7 @@ class QwenTTS:
             sample_rate: Output sample rate
             prefix: Filename prefix
             ref_text: Reference text
+            temperature: Sampling temperature
 
         Returns:
             List of paths to generated audio files
@@ -145,7 +153,7 @@ class QwenTTS:
         outputs = []
         for i, text in enumerate(texts):
             output_path = output_dir / f"{prefix}_{i:03d}.wav"
-            self.generate(text, reference_audio, output_path, sample_rate, ref_text)
+            self.generate(text, reference_audio, output_path, sample_rate, ref_text, temperature)
             outputs.append(output_path)
 
         return outputs

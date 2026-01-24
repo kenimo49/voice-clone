@@ -19,7 +19,7 @@ class AudioConfig:
 class TTSConfig:
     """TTS model configuration."""
 
-    model_name: str = "Qwen/Qwen3-TTS-12Hz-0.6B-Base"
+    model_name: str = "Qwen/Qwen3-TTS-12Hz-1.7B-Base"  # 高品質モデル（GPU推奨）
     device: str = "auto"  # "auto", "cpu", "cuda"
     torch_dtype: str = "float32"  # CPU requires float32
 

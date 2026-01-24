@@ -79,6 +79,7 @@ def record(
 @click.option("--device", type=click.Choice(["auto", "cpu", "cuda"]), default="auto", help="Compute device")
 @click.option("--model", default="Qwen/Qwen3-TTS-12Hz-0.6B-Base", help="Model name")
 @click.option("--sample-rate", type=int, default=24000, help="Output sample rate")
+@click.option("--temperature", type=float, default=1.0, help="Sampling temperature (1.2-1.5: high tension, 0.7-0.9: calm)")
 def generate(
     reference: str,
     text: str,
@@ -86,6 +87,7 @@ def generate(
     device: str,
     model: str,
     sample_rate: int,
+    temperature: float,
 ):
     """Generate speech using voice cloning.
 
@@ -94,6 +96,8 @@ def generate(
         voice-clone generate -r samples/speaker.wav -t "Hello world" -o outputs/hello.wav
 
         voice-clone generate -r samples/speaker.wav -t "Test" -o outputs/test.wav --device cpu
+
+        voice-clone generate -r samples/speaker.wav -t "Hi!" -o outputs/hi.wav --temperature 1.3
     """
     from .tts.qwen_tts import QwenTTS
 
@@ -107,6 +111,8 @@ def generate(
         console.print(f"[blue]Reference:[/blue] {reference_path}")
         console.print(f"[blue]Text:[/blue] {text}")
         console.print(f"[blue]Device:[/blue] {device}")
+        if temperature != 1.0:
+            console.print(f"[blue]Temperature:[/blue] {temperature}")
 
         with console.status("[bold green]Generating speech..."):
             tts.generate(
@@ -114,6 +120,7 @@ def generate(
                 reference_audio=reference_path,
                 output_path=output_path,
                 sample_rate=sample_rate,
+                temperature=temperature,
             )
 
         console.print(f"[green]Generated:[/green] {output_path}")
