@@ -31,6 +31,7 @@ voice-clone generate \
 | `-r, --reference` | 参照音声ファイル（必須） | - |
 | `-t, --text` | 読み上げテキスト（必須） | - |
 | `-o, --output` | 出力ファイルパス（必須） | - |
+| `--ref-text` | 参照音声で話している内容（精度向上） | - |
 | `--device` | 計算デバイス | auto |
 | `--model` | モデル名 | Qwen/Qwen3-TTS-12Hz-0.6B-Base |
 | `--sample-rate` | サンプルレート | 24000 |
@@ -248,6 +249,114 @@ voice-clone generate \
   --temperature 1.3
 ```
 
+## 参照テキストによる精度向上
+
+`--ref-text` オプションで参照音声の内容（話しているテキスト）を指定すると、音声クローンの再現度が向上します。
+
+### 仕組み
+
+- **指定なし**: 音声から話者特徴（x-vector）のみを抽出
+- **指定あり**: 音声とテキストの対応関係を理解した上で話者特徴を抽出
+
+### 使用例
+
+```bash
+# 参照音声で「こんにちは、今日はいい天気ですね」と話している場合
+voice-clone generate \
+  -r samples/speaker.wav \
+  --ref-text "こんにちは、今日はいい天気ですね" \
+  -t "明日も晴れるといいですね" \
+  -o outputs/output.wav
+```
+
+### 効果
+
+| 条件 | 再現度 |
+|------|--------|
+| `--ref-text` なし | 標準 |
+| `--ref-text` あり（正確） | 向上 |
+| `--ref-text` あり（不正確） | 低下の可能性 |
+
+> **注意**: 参照テキストは正確に指定してください。間違った内容を指定すると、逆に品質が低下する可能性があります。
+
+### おすすめの使い方
+
+1. 参照音声を録音する際に、話す内容を事前に決めておく
+2. 録音後、その内容を `--ref-text` で指定する
+
+```bash
+# 録音時：「私の名前は田中です。よろしくお願いします。」と話す
+voice-clone record -o samples/tanaka.wav -d 5
+
+# 生成時：話した内容を ref-text に指定
+voice-clone generate \
+  -r samples/tanaka.wav \
+  --ref-text "私の名前は田中です。よろしくお願いします。" \
+  -t "本日はお越しいただきありがとうございます" \
+  -o outputs/greeting.wav
+```
+
+## 参照テキストの自動認識
+
+`--auto-transcribe` オプションを使うと、参照音声の内容を自動でテキスト化できます（Vosk使用）。
+
+### 使い方
+
+```bash
+# 参照音声を自動でテキスト化して生成
+voice-clone generate \
+  -r samples/speaker.wav \
+  --auto-transcribe \
+  -t "新しいテキスト" \
+  -o outputs/output.wav
+```
+
+### 音声ファイルのテキスト化
+
+`transcribe` コマンドで音声ファイルをテキスト化できます。
+
+```bash
+# 日本語（デフォルト）
+voice-clone transcribe -i samples/speaker.wav
+
+# 英語
+voice-clone transcribe -i samples/english.wav -l en
+
+# 中国語
+voice-clone transcribe -i samples/chinese.wav -l zh
+```
+
+### Voskモデルのダウンロード
+
+初回使用時にモデルが自動ダウンロードされますが、事前にダウンロードすることもできます。
+
+```bash
+# 日本語モデル（約50MB）
+voice-clone download-model
+
+# 英語モデル
+voice-clone download-model -l en
+```
+
+モデルは `~/.voice-clone/models/` に保存されます。
+
+### 対応言語
+
+| 言語 | コード | モデル |
+|------|--------|--------|
+| 日本語 | `ja` | vosk-model-small-ja-0.22 |
+| 英語 | `en` | vosk-model-small-en-us-0.15 |
+| 中国語 | `zh` | vosk-model-small-cn-0.22 |
+
+### 手動 vs 自動
+
+| 方式 | メリット | デメリット |
+|------|---------|-----------|
+| `--ref-text` 手動指定 | 正確、高精度 | 入力の手間 |
+| `--auto-transcribe` 自動 | 簡単、手間なし | 認識精度に依存 |
+
+> **Tips**: 重要な音声生成では `--ref-text` で正確なテキストを指定することをおすすめします。
+
 ## 音声品質を上げるコツ
 
 ### 参照音声
@@ -347,6 +456,14 @@ tts.generate(
     text="こんにちは",
     reference_audio=Path("samples/speaker.wav"),
     output_path=Path("outputs/hello.wav"),
+)
+
+# 参照テキスト指定で精度向上
+tts.generate(
+    text="明日も頑張りましょう",
+    reference_audio=Path("samples/speaker.wav"),
+    output_path=Path("outputs/tomorrow.wav"),
+    ref_text="今日も一日お疲れ様でした",
 )
 
 # テンション高めで生成

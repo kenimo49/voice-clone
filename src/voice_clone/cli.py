@@ -76,6 +76,8 @@ def record(
 @click.option("-r", "--reference", required=True, type=click.Path(exists=True), help="Reference audio file")
 @click.option("-t", "--text", required=True, help="Text to synthesize")
 @click.option("-o", "--output", required=True, type=click.Path(), help="Output file path")
+@click.option("--ref-text", default=None, help="Text spoken in reference audio (improves accuracy)")
+@click.option("--auto-transcribe", is_flag=True, help="Auto-transcribe reference audio using Vosk")
 @click.option("--device", type=click.Choice(["auto", "cpu", "cuda"]), default="auto", help="Compute device")
 @click.option("--model", default="Qwen/Qwen3-TTS-12Hz-0.6B-Base", help="Model name")
 @click.option("--sample-rate", type=int, default=24000, help="Output sample rate")
@@ -84,6 +86,8 @@ def generate(
     reference: str,
     text: str,
     output: str,
+    ref_text: Optional[str],
+    auto_transcribe: bool,
     device: str,
     model: str,
     sample_rate: int,
@@ -98,6 +102,10 @@ def generate(
         voice-clone generate -r samples/speaker.wav -t "Test" -o outputs/test.wav --device cpu
 
         voice-clone generate -r samples/speaker.wav -t "Hi!" -o outputs/hi.wav --temperature 1.3
+
+        voice-clone generate -r samples/speaker.wav --ref-text "Reference speech" -t "New text" -o outputs/out.wav
+
+        voice-clone generate -r samples/speaker.wav --auto-transcribe -t "New text" -o outputs/out.wav
     """
     from .tts.qwen_tts import QwenTTS
 
@@ -107,10 +115,26 @@ def generate(
     reference_path = Path(reference)
     output_path = Path(output)
 
+    # Auto-transcribe reference audio if requested
+    if auto_transcribe and not ref_text:
+        from .stt import VoskSTT
+
+        console.print("[blue]Auto-transcribing reference audio...[/blue]")
+        with console.status("[bold green]Transcribing..."):
+            stt = VoskSTT(language="ja")
+            ref_text = stt.transcribe(reference_path)
+
+        if ref_text:
+            console.print(f"[green]Transcribed:[/green] {ref_text}")
+        else:
+            console.print("[yellow]Warning:[/yellow] Could not transcribe reference audio")
+
     try:
         console.print(f"[blue]Reference:[/blue] {reference_path}")
         console.print(f"[blue]Text:[/blue] {text}")
         console.print(f"[blue]Device:[/blue] {device}")
+        if ref_text:
+            console.print(f"[blue]Ref Text:[/blue] {ref_text}")
         if temperature != 1.0:
             console.print(f"[blue]Temperature:[/blue] {temperature}")
 
@@ -120,6 +144,7 @@ def generate(
                 reference_audio=reference_path,
                 output_path=output_path,
                 sample_rate=sample_rate,
+                ref_text=ref_text,
                 temperature=temperature,
             )
 
@@ -127,6 +152,63 @@ def generate(
 
     except Exception as e:
         console.print(f"[red]Generation failed:[/red] {e}")
+        raise SystemExit(1)
+
+
+@main.command()
+@click.option("-i", "--input", "input_file", required=True, type=click.Path(exists=True), help="Audio file to transcribe")
+@click.option("-l", "--language", default="ja", type=click.Choice(["ja", "en", "zh"]), help="Language (default: ja)")
+def transcribe(input_file: str, language: str):
+    """Transcribe audio file to text using Vosk.
+
+    Examples:
+
+        voice-clone transcribe -i samples/speaker.wav
+
+        voice-clone transcribe -i samples/english.wav -l en
+    """
+    from .stt import VoskSTT
+
+    input_path = Path(input_file)
+
+    try:
+        console.print(f"[blue]Input:[/blue] {input_path}")
+        console.print(f"[blue]Language:[/blue] {language}")
+
+        with console.status("[bold green]Transcribing..."):
+            stt = VoskSTT(language=language)
+            text = stt.transcribe(input_path)
+
+        if text:
+            console.print(f"[green]Result:[/green] {text}")
+        else:
+            console.print("[yellow]No speech detected[/yellow]")
+
+    except Exception as e:
+        console.print(f"[red]Transcription failed:[/red] {e}")
+        raise SystemExit(1)
+
+
+@main.command("download-model")
+@click.option("-l", "--language", default="ja", type=click.Choice(["ja", "en", "zh"]), help="Language (default: ja)")
+def download_model(language: str):
+    """Download Vosk STT model.
+
+    Examples:
+
+        voice-clone download-model
+
+        voice-clone download-model -l en
+    """
+    from .stt import download_model as dl_model
+
+    try:
+        console.print(f"[blue]Downloading Vosk model for:[/blue] {language}")
+        model_path = dl_model(language)
+        console.print(f"[green]Model ready:[/green] {model_path}")
+
+    except Exception as e:
+        console.print(f"[red]Download failed:[/red] {e}")
         raise SystemExit(1)
 
 

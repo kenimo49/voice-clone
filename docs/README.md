@@ -34,7 +34,8 @@ docs/
     ├── environment-setup.md  # 環境構築
     ├── recording.md          # 録音ガイド
     ├── youtube-audio.md      # YouTube音声抽出
-    └── tts.md                # TTS（音声生成）
+    ├── tts.md                # TTS（音声生成）
+    └── transcription.md      # 音声テキスト化（STT）
 ```
 
 ---
@@ -81,6 +82,7 @@ docs/
 | [recording.md](./guide/recording.md) | マイクでの録音方法、コツ | 自分の声を使いたい人 |
 | [youtube-audio.md](./guide/youtube-audio.md) | YouTube からの音声抽出 | 既存の音声を使いたい人 |
 | [tts.md](./guide/tts.md) | 音声生成の詳細、オプション | 全員 |
+| [transcription.md](./guide/transcription.md) | 音声テキスト化（STT）、再現度向上 | 全員 |
 
 ---
 
@@ -104,10 +106,15 @@ graph LR
    - 自分の声 → [録音ガイド](./guide/recording.md)
    - 既存の音声 → [YouTube 音声抽出](./guide/youtube-audio.md)
 
-2. **音声生成**
+2. **参照音声のテキスト化（オプション、再現度向上）**
+   - [音声テキスト化ガイド](./guide/transcription.md)
+   - `voice-clone transcribe` で内容を確認
+   - `--ref-text` で正確なテキストを指定
+
+3. **音声生成**
    - [TTS ガイド](./guide/tts.md)
 
-3. **確認・調整**
+4. **確認・調整**
    - 再生して品質を確認
    - 必要に応じて参照音声を変更
 
