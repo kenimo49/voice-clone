@@ -25,7 +25,14 @@ ls /mnt/wslg
 
 `/mnt/wslg` ディレクトリが存在すれば WSLg が有効です。
 
-## 2. 必要なシステムパッケージのインストール
+## 2. リポジトリの取得
+
+```bash
+git clone https://github.com/kenimo49/voice-clone.git
+cd voice-clone
+```
+
+## 3. 必要なシステムパッケージのインストール
 
 ```bash
 sudo apt update
@@ -39,7 +46,7 @@ sudo apt install -y \
     libportaudio2
 ```
 
-## 3. WSLg オーディオ設定
+## 4. WSLg オーディオ設定
 
 プロジェクトに含まれるセットアップスクリプトを実行します。
 
@@ -84,7 +91,7 @@ export PULSE_SERVER="unix:/mnt/wslg/PulseServer"
 source ~/.bashrc
 ```
 
-## 4. Python 仮想環境の作成
+## 5. Python 仮想環境の作成
 
 ```bash
 cd voice-clone
@@ -108,9 +115,11 @@ pip install -e .
 | soundfile | オーディオファイル読み書き |
 | torch | 深層学習フレームワーク |
 | transformers | Hugging Face モデル |
+| qwen-tts | Qwen3-TTS 音声合成ライブラリ |
+| vosk | 音声認識（STT）ライブラリ |
 | rich | CLI 出力の装飾 |
 
-## 5. インストールの確認
+## 6. インストールの確認
 
 ```bash
 # CLI が動作するか確認
@@ -123,7 +132,7 @@ voice-clone devices --audio
 voice-clone devices --gpu
 ```
 
-## 6. マイクの確認
+## 7. マイクの確認
 
 ### Windows 側の設定
 

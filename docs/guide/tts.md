@@ -8,6 +8,9 @@ Voice Clone の TTS 機能は、参照音声から話者の特徴を抽出し、
 
 ## 前提条件
 
+- [環境構築](./environment-setup.md) が完了していること
+  - `qwen-tts` パッケージ（Qwen3-TTS ライブラリ）が必要です
+  - `pip install -e .` で自動インストールされます
 - 参照音声が準備されていること
   - [録音ガイド](./recording.md)
   - [YouTube からの音声抽出ガイド](./youtube-audio.md)

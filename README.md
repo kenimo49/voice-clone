@@ -19,6 +19,7 @@ Qwen3-TTS を使用した音声クローンツール。WSLg で録音し、任�
 
 ```bash
 # リポジトリのクローン
+git clone https://github.com/kenimo49/voice-clone.git
 cd voice-clone
 
 # WSLg オーディオ設定（初回のみ）
@@ -91,9 +92,12 @@ voice-clone/
 │   │   ├── __init__.py
 │   │   ├── devices.py
 │   │   └── recorder.py
-│   └── tts/
+│   ├── tts/
+│   │   ├── __init__.py
+│   │   └── qwen_tts.py
+│   └── stt/
 │       ├── __init__.py
-│       └── qwen_tts.py
+│       └── vosk_stt.py
 ├── samples/          # 入力音声サンプル
 └── outputs/          # 生成音声出力
 ```
@@ -102,7 +106,7 @@ voice-clone/
 
 ### 使用モデル
 
-- **Qwen/Qwen3-TTS-12Hz-0.6B**: 軽量版、16GB RAM で余裕を持って動作
+- **Qwen/Qwen3-TTS-12Hz-0.6B-Base**: 軽量版、16GB RAM で余裕を持って動作
 
 ### CPU 動作について
 
